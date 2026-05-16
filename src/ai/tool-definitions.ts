@@ -59,6 +59,17 @@ export const runnerTools: FunctionToolDef[] = [
           type: "array",
           description:
             "Slices: each item `{ label: string, value: number }` with finite non-negative numbers.",
+          items: {
+            type: "object",
+            properties: {
+              label: { type: "string", description: "Slice label shown in the legend." },
+              value: {
+                type: "number",
+                description: "Numeric weight; need not sum to 100 (UI normalizes).",
+              },
+            },
+            required: ["label", "value"],
+          },
         },
       },
       required: ["id", "segments"],
@@ -84,11 +95,24 @@ export const runnerTools: FunctionToolDef[] = [
         labels: {
           type: "array",
           description: "Category labels (strings), same length as each series.values array.",
+          items: { type: "string" },
         },
         series: {
           type: "array",
           description:
             'Named numeric series: [{ "name": "Q1", "values": [10, 20, ...] }, ...]; every values length === labels.length.',
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string", description: "Series name for the legend." },
+              values: {
+                type: "array",
+                description: "One number per label index; same length as labels.",
+                items: { type: "number" },
+              },
+            },
+            required: ["name", "values"],
+          },
         },
         orientation: {
           type: "string",
@@ -118,11 +142,134 @@ export const runnerTools: FunctionToolDef[] = [
         labels: {
           type: "array",
           description: "Ordered X-axis labels; each series.values must have the same length.",
+          items: { type: "string" },
         },
         series: {
           type: "array",
           description:
             'Lines: [{ "name": "ARR", "values": [1.2, 1.5, ...] }, ...]; finite numbers only.',
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string", description: "Line name for the legend." },
+              values: {
+                type: "array",
+                description: "Y values aligned to labels; finite numbers only.",
+                items: { type: "number" },
+              },
+            },
+            required: ["name", "values"],
+          },
+        },
+      },
+      required: ["id", "labels", "series"],
+    },
+  },
+  {
+    type: "function",
+    name: "create_area_chart",
+    strict: false,
+    description:
+      "Like create_line_chart but with filled areas under each series — good for cumulative trends, capacity curves, or volume over time. " +
+      "Same parameters as create_line_chart. Cite {{artifact:chart:<id>}} after success.",
+    parameters: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Must match `{{artifact:chart:<id>}}` exactly." },
+        title: { type: "string", description: "Optional chart title." },
+        labels: {
+          type: "array",
+          description: "Ordered X-axis labels; each series.values must have the same length.",
+          items: { type: "string" },
+        },
+        series: {
+          type: "array",
+          description: "Named numeric series aligned 1:1 with labels.",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              values: { type: "array", items: { type: "number" } },
+            },
+            required: ["name", "values"],
+          },
+        },
+      },
+      required: ["id", "labels", "series"],
+    },
+  },
+  {
+    type: "function",
+    name: "create_scatter_chart",
+    strict: false,
+    description:
+      "Numeric X/Y scatter plot — correlations, latency vs throughput, experiment sweeps. " +
+      "Each series has `name` and `points: [{ x, y, label? }, ...]`. Cite {{artifact:chart:<id>}} after success.",
+    parameters: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Must match `{{artifact:chart:<id>}}` exactly." },
+        title: { type: "string", description: "Optional chart title." },
+        series: {
+          type: "array",
+          description:
+            '[{ "name": "A", "points": [{ "x": 1, "y": 2, "label": "run-1" }, ...] }, ...]; x and y must be finite numbers.',
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              points: {
+                type: "array",
+                items: {
+                  type: "object",
+                  properties: {
+                    x: { type: "number" },
+                    y: { type: "number" },
+                    label: { type: "string", description: "Optional tooltip label." },
+                  },
+                  required: ["x", "y"],
+                },
+              },
+            },
+            required: ["name", "points"],
+          },
+        },
+      },
+      required: ["id", "series"],
+    },
+  },
+  {
+    type: "function",
+    name: "create_stacked_bar_chart",
+    strict: false,
+    description:
+      "Stacked vertical or horizontal bars — composition per category when series are additive (must be non-negative). " +
+      "Same parameters as create_bar_chart. Cite {{artifact:chart:<id>}} after success.",
+    parameters: {
+      type: "object",
+      properties: {
+        id: { type: "string", description: "Must match `{{artifact:chart:<id>}}` exactly." },
+        title: { type: "string", description: "Optional chart title." },
+        labels: {
+          type: "array",
+          description: "Category labels; each series.values aligns 1:1.",
+          items: { type: "string" },
+        },
+        series: {
+          type: "array",
+          description: "Named numeric series; every value must be ≥ 0.",
+          items: {
+            type: "object",
+            properties: {
+              name: { type: "string" },
+              values: { type: "array", items: { type: "number" } },
+            },
+            required: ["name", "values"],
+          },
+        },
+        orientation: {
+          type: "string",
+          description: 'Optional `"vertical"` or `"horizontal"` (default horizontal).',
         },
       },
       required: ["id", "labels", "series"],
@@ -165,6 +312,27 @@ export const runnerTools: FunctionToolDef[] = [
         },
       },
       required: ["list"],
+    },
+  },
+  {
+    type: "function",
+    name: "create_checklist",
+    strict: false,
+    description:
+      "Interactive checklist the user can tick in the Studio UI (persisted to Storage). " +
+      "Use for launch QA, migration gates, onboarding tasks — not the same as create_list (read-only bullets). " +
+      "If you emit {{artifact:checklist:<id>}}, you MUST call create_checklist first with matching id. " +
+      "Each item needs stable `id`, `label`, and `checked` (boolean).",
+    parameters: {
+      type: "object",
+      properties: {
+        checklist: {
+          type: "object",
+          description:
+            '{ kind:"checklist", id, title?, items:[{id,label,checked}] } — item ids must be unique [a-zA-Z0-9_-]+.',
+        },
+      },
+      required: ["checklist"],
     },
   },
   {

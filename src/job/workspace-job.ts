@@ -35,9 +35,10 @@ export async function runWorkspaceJob(workspaceId: string): Promise<void> {
       datasets: payload.datasets,
       svgs: payload.svgs,
       lists: payload.lists,
+      checklists: payload.checklists,
     });
     console.log(
-      `[runner] completed ${workspaceId} (files=${payload.files.length} charts=${payload.charts.length} tables=${payload.datasets.length} svgs=${payload.svgs.length} lists=${payload.lists.length})`,
+      `[runner] completed ${workspaceId} (files=${payload.files.length} charts=${payload.charts.length} tables=${payload.datasets.length} svgs=${payload.svgs.length} lists=${payload.lists.length} checklists=${payload.checklists.length})`,
     );
   });
 }

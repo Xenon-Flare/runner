@@ -5,7 +5,7 @@
 # Xenonflare Runner
 
 **The open-source worker that powers your own AI studio on hardware *you* control.**  
-Lease jobs from the Xenonflare cloud queue, run **OpenAI** (Responses API) locally, and ship **files, charts, tables, lists, and SVGs** back to **Xenonflare Studio** — without ever sending your provider API key to our servers.
+Lease jobs from the Xenonflare cloud queue, run **OpenAI** (Responses API) locally, and ship **files, charts** (pie, bar, line, area, scatter, stacked bar), **tables, lists, checklists, and SVGs** back to **Xenonflare Studio** — without ever sending your provider API key to our servers.
 
 ---
 
@@ -24,10 +24,10 @@ Lease jobs from the Xenonflare cloud queue, run **OpenAI** (Responses API) local
 
 1. **`leaseWorkspaceJob`** — Wait for work assigned to your runner key (global pool or private “user” target).
 2. **`getWorkspaceRunnerContext`** — Pull the compiled prompt + workspace state.
-3. **Model + tools** — OpenAI Responses with tool calls for deliverables (charts, tables, files, …).
-4. **`completeWorkspaceJob`** or **`failWorkspaceJob`** — Upload results to Studio Storage — done.
+3. **Model + tools** — OpenAI Responses with tool calls for deliverables (charts, tables, files, lists, checklists, SVGs, …).
+4. **`completeWorkspaceJob`** or **`failWorkspaceJob`** — Send deliverable arrays (files, charts, tables, lists, checklists, SVGs) and the assistant message — done.
 
-For narrative docs, use **Documentation → Runners & queues** inside your Studio deployment, or browse the [Studio monorepo](https://github.com/Xenon-Flare/shorts-generator) where this worker is maintained.
+For narrative docs, use **Documentation → Runners & queues** inside your Xenonflare Studio deployment. Studio itself is not open source; this repository is the **open-source worker** that talks to Studio's cloud queue over HTTPS.
 
 ---
 
@@ -64,14 +64,14 @@ Create a `.env` file (see [.env.example](./.env.example)):
 ## Learn more
 
 - **Mint a key** — Xenonflare Studio → **Settings** → **Runners** → **Add runner**, copy the secret into `RUNNER_TOKEN`.
-- **Deliverable shapes** — Files, charts, tables, lists, and SVGs follow the same schemas as production runners.
+- **Deliverable shapes** — Files, charts (all kinds above), tables, lists, checklists, and SVGs follow the same JSON shapes as production runners and Cloud Functions validation. Per-type caps and parsers live under `src/deliverables/` (`deliverable-limits.ts`, `validate-runner-*.ts`, re-exported from `deliverable-validation.ts`).
 - **Horizontally** — One OS process = one token; duplicate the process for parallel capacity.
 
 ---
 
 ## Contributing
 
-Issues and PRs are welcome. If you change tool payloads or HTTP contracts, align with the [shorts-generator](https://github.com/Xenon-Flare/shorts-generator) app and runner package so Studio and workers stay compatible.
+Issues and PRs are welcome. If you change tool payloads or HTTP contracts, coordinate with Xenonflare so **Studio's cloud APIs and this worker stay compatible** (watch Xenonflare release notes or open a discussion in this repository).
 
 ---
 

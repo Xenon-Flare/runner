@@ -1,5 +1,6 @@
 import type {
   RunnerChart,
+  RunnerChecklist,
   RunnerDatasetTable,
   RunnerFile,
   RunnerList,
@@ -12,4 +13,5 @@ export type RunnerAccumulator = {
   datasets: RunnerDatasetTable[];
   svgs: RunnerSvg[];
   lists: RunnerList[];
+  checklists: RunnerChecklist[];
 };

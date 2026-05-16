@@ -1,6 +1,6 @@
 /** Keep in sync with `src/lib/artifact-placeholders.ts`. */
 
-export type ArtifactRefKind = "chart" | "table" | "file" | "svg" | "list";
+export type ArtifactRefKind = "chart" | "table" | "file" | "svg" | "list" | "checklist";
 
 export type ArtifactRefs = {
   charts: string[];
@@ -8,10 +8,11 @@ export type ArtifactRefs = {
   files: string[];
   svgs: string[];
   lists: string[];
+  checklists: string[];
 };
 
 const ARTIFACT_PLACEHOLDER =
-  /\{\{\s*artifact\s*:\s*(chart|table|file|svg|list)\s*:\s*([^}]+?)\s*\}\}/gi;
+  /\{\{\s*artifact\s*:\s*(chart|table|file|svg|list|checklist)\s*:\s*([^}]+?)\s*\}\}/gi;
 
 function uniqueTrimmed(ids: string[]): string[] {
   const seen = new Set<string>();
@@ -34,6 +35,7 @@ export function collectArtifactRefsFromMessage(message: string): ArtifactRefs {
   const files: string[] = [];
   const svgs: string[] = [];
   const lists: string[] = [];
+  const checklists: string[] = [];
   const re = new RegExp(ARTIFACT_PLACEHOLDER.source, "gi");
   let m: RegExpExecArray | null;
   while ((m = re.exec(message)) !== null) {
@@ -44,6 +46,7 @@ export function collectArtifactRefsFromMessage(message: string): ArtifactRefs {
     else if (kind === "table") tables.push(ref);
     else if (kind === "svg") svgs.push(ref);
     else if (kind === "list") lists.push(ref);
+    else if (kind === "checklist") checklists.push(ref);
     else files.push(ref);
   }
   return {
@@ -52,6 +55,7 @@ export function collectArtifactRefsFromMessage(message: string): ArtifactRefs {
     files: uniqueTrimmed(files),
     svgs: uniqueTrimmed(svgs),
     lists: uniqueTrimmed(lists),
+    checklists: uniqueTrimmed(checklists),
   };
 }
 

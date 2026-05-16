@@ -49,6 +49,7 @@ export const runnerPayloadSchema = z
     datasets: z.array(z.unknown()).optional(),
     svgs: z.array(z.unknown()).optional(),
     lists: z.array(z.unknown()).optional(),
+    checklists: z.array(z.unknown()).optional(),
   })
   .transform((o) => ({
     assistantMessage: o.assistantMessage ?? "",
@@ -57,6 +58,7 @@ export const runnerPayloadSchema = z
     datasets: o.datasets ?? [],
     svgs: o.svgs ?? [],
     lists: o.lists ?? [],
+    checklists: o.checklists ?? [],
   }));
 
 export type RunnerPayload = z.infer<typeof runnerPayloadSchema>;

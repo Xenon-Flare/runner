@@ -42,6 +42,7 @@ describe("runnerPayloadSchema", () => {
       datasets: [],
       svgs: [],
       lists: [],
+      checklists: [],
     });
   });
 
@@ -58,6 +59,7 @@ describe("runnerPayloadSchema", () => {
       datasets: [],
       svgs: [],
       lists: [],
+      checklists: [],
     });
   });
 });

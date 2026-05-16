@@ -17,6 +17,7 @@ export async function generateRunnerPayload(userBlock: string): Promise<RunnerPa
     datasets: [],
     svgs: [],
     lists: [],
+    checklists: [],
   };
 
   let { assistantMessage, previousResponseId } = await runToolLoop(

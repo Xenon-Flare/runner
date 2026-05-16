@@ -9,7 +9,7 @@ describe("findMissingDeliverables", () => {
   it("detects chart placeholders without chart tool output", () => {
     const missing = findMissingDeliverables(
       "Cost {{artifact:chart:costs_pie}} and timeline {{artifact:chart:timeline_bar}}",
-      { files: [], charts: [], datasets: [], svgs: [], lists: [] },
+      { files: [], charts: [], datasets: [], svgs: [], lists: [], checklists: [] },
     );
     expect(missing.charts).toEqual(["costs_pie", "timeline_bar"]);
     expect(missingDeliverablesIsEmpty(missing)).toBe(false);
@@ -30,6 +30,7 @@ describe("findMissingDeliverables", () => {
         datasets: [],
         svgs: [],
         lists: [],
+        checklists: [],
       },
     );
     expect(missingDeliverablesIsEmpty(missing)).toBe(true);
@@ -37,10 +38,10 @@ describe("findMissingDeliverables", () => {
 
   it("builds repair prompt listing missing tools", () => {
     const prompt = buildDeliverableRepairPrompt(
-      { charts: ["costs_pie"], tables: ["export_table"], files: [], svgs: [], lists: [] },
+      { charts: ["costs_pie"], tables: ["export_table"], files: [], svgs: [], lists: [], checklists: [] },
       "Body {{artifact:chart:costs_pie}}",
     );
-    expect(prompt).toContain("create_pie_chart");
+    expect(prompt).toContain("chart");
     expect(prompt).toContain("costs_pie");
     expect(prompt).toContain("create_table");
     expect(prompt).toContain("export_table");

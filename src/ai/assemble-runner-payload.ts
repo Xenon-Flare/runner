@@ -21,6 +21,7 @@ export function finalizeRunnerPayload(
     datasets: acc.datasets,
     svgs: acc.svgs,
     lists: acc.lists,
+    checklists: acc.checklists,
   };
   const parsed = runnerPayloadSchema.safeParse(payload);
   if (!parsed.success) {
@@ -34,7 +35,8 @@ export function finalizeRunnerPayload(
     parsed.data.charts.length > 0 ||
     parsed.data.datasets.length > 0 ||
     parsed.data.svgs.length > 0 ||
-    parsed.data.lists.length > 0;
+    parsed.data.lists.length > 0 ||
+    parsed.data.checklists.length > 0;
   if (!hasDeliverable) {
     throw new Error("Model produced no assistant text and no tool artifacts");
   }

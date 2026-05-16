@@ -17,7 +17,7 @@ export function buildRunnerInstructions(): string {
 - **Every token MUST have a matching tool call earlier in THIS job** with the same id (or exact file path for files). Typing a token alone never creates UI content—verification fails after automatic repair retries.
 - Safe workflow inside one Responses job:
   1. Decide which artifacts you need and their ids (e.g. list \`mvp-plan\`, chart \`cost-split\`).
-  2. Call the tools (\`create_list\`, \`create_pie_chart\` / \`create_bar_chart\` / \`create_line_chart\`, …); wait until each returns JSON with \`"ok": true\`.
+  2. Call the tools (\`create_list\`, \`create_checklist\`, chart tools (\`create_pie_chart\`, \`create_bar_chart\`, \`create_stacked_bar_chart\`, \`create_line_chart\`, \`create_area_chart\`, \`create_scatter_chart\`), …); wait until each returns JSON with \`"ok": true\`.
   3. Only then emit your final assistant message that references those artifacts with placeholders.
 - **Never** paste \`{{artifact:list:some-id}}\` if you did not literally call \`create_list\` with \`id: "some-id"\` containing the bullet strings in \`items\`.
 
@@ -30,24 +30,29 @@ create_list({ "list": { "kind":"list","id":"mvp-plan","title":"MVP Plan","ordere
 
 - Wait for OK, then cite \`{{artifact:list:mvp-plan}}\` inline. Reuse the identical id everywhere.
 
-### Same idea for charts, tables, files, svg
-- \`{{artifact:chart:X}}\` requires one of \`create_pie_chart\`, \`create_bar_chart\`, or \`create_line_chart\` with \`id\` exactly \`X\` (pick the tool that matches the viz).
+### Same idea for charts, tables, files, svg, checklist
+- \`{{artifact:chart:X}}\` requires one chart tool with \`id\` exactly \`X\`: \`create_pie_chart\`, \`create_bar_chart\`, \`create_stacked_bar_chart\`, \`create_line_chart\`, \`create_area_chart\`, or \`create_scatter_chart\` (pick the tool that matches the viz).
 - \`{{artifact:table:X}}\` requires \`create_table\` with table.id \`X\`.
 - \`{{artifact:file:path/name.md}}\` requires \`create_file\` with the same \`name\`.
 - \`{{artifact:svg:X}}\` requires \`create_svg\` with svg.id \`X\`.
+- \`{{artifact:checklist:X}}\` requires \`create_checklist\` with checklist.id \`X\` and stable per-item ids.
 
 Place tokens at natural breakpoints (blank line around each works well). Duplicate tokens only when you deliberately refer twice to the same artifact.
 
 ## Forbidden in assistant text (automatic failure if you cheat)
 - No markdown pipe tables (\`| Column |\`, \`|---|\`). Tables → \`create_table\`.
-- No markdown bullets or numbered prose (\`- item\`, \`1.\`) for curated lists/checklists/phases/MVP bullets. Lists → \`create_list\` (\`ordered: true\` for numbered execution steps).
+- No markdown bullets or numbered prose (\`- item\`, \`1.\`) for curated lists/phases/MVP bullets. Read-only lists → \`create_list\` (\`ordered: true\` for numbered execution steps). User-tickable QA/task lists → \`create_checklist\`.
 
 ## When to invoke each tool
 - **create_pie_chart** — Part-of-whole splits (budget mix, share, composition).
 - **create_bar_chart** — Compare numeric values across categories (KPIs by team, feature scores).
+- **create_stacked_bar_chart** — Stacked composition per category (non-negative values only).
 - **create_line_chart** — Trends over an ordered axis (time series, sequential milestones).
+- **create_area_chart** — Like line charts but filled — volume/capacity curves.
+- **create_scatter_chart** — Numeric X/Y relationships (correlation, latency vs throughput).
 - **create_table** — Feature matrices, vendor comparisons, constraint grids, glossary columns, anything row/column.
-- **create_list** — MVP scope, phased delivery, onboarding steps, risk registers, QA checklists—anything bullet-like.
+- **create_list** — MVP scope, phased delivery, onboarding steps, risk registers—read-only bullet-like content.
+- **create_checklist** — Same shape as a task list but each row has \`checked\`; users can tick items in the Studio UI.
 - **create_svg** — Architecture boxes/arrows/flows—never for numeric plots (those are charts).
 - **create_file** — Canonical docs > ~3 paragraphs: PRDs, API contracts, long prompts meant for another repo. Organize paths (\`specs/\`, \`exports/\`). Not for svg.
 
