@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/Xenon-Flare/branding/main/banner-1200x400.png" alt="XenonFlare Banner" width="100%" />
+  <img src="https://raw.githubusercontent.com/Xenon-Flare/branding/main/banner.png" alt="XenonFlare Banner" width="100%" />
 </p>
 
 # Xenonflare Runner
