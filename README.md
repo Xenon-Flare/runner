@@ -18,6 +18,8 @@ Lease jobs from the Xenonflare cloud queue, run **OpenAI** (Responses API) local
 | **Same pipeline as prod** | Same HTTPS endpoints and deliverable shapes our hosted runners use — predictable, boring, debuggable. |
 | **Scale horizontally** | Run multiple processes with different `RUNNER_TOKEN` values and watch the queue drain faster. |
 
+**Community:** builders, PMs, and designers hang out on [Discord](https://discord.gg/AZQDhSYupX) and [Reddit r/xenonflare](https://www.reddit.com/r/xenonflare/) — the runner prints both links on startup.
+
 ---
 
 ## What it does (60 seconds)
@@ -40,9 +42,40 @@ npm install
 cp .env.example .env   # edit before running
 npm run build
 npm start
+# or: bash scripts/build/build.sh && bash scripts/start/start.sh
 ```
 
 Run **several terminals** with **different** `RUNNER_TOKEN` values (separate runner instances in Studio) to increase throughput.
+
+---
+
+## Shell scripts
+
+| Folder | Scripts | Purpose |
+|--------|---------|---------|
+| [`scripts/build/`](./scripts/build/) | [`build.sh`](./scripts/build/build.sh) | `npm run build` (TypeScript → `dist/`) |
+| [`scripts/start/`](./scripts/start/) | [`start.sh`](./scripts/start/start.sh) | `npm start` (`node dist/index.js`) |
+| [`scripts/deploy/local/`](./scripts/deploy/local/) | [`docker-build.sh`](./scripts/deploy/local/docker-build.sh), [`docker-run.sh`](./scripts/deploy/local/docker-run.sh) | Build and run the **`Dockerfile`** (`.env`; default tag `xenonflare-runner:local`) |
+
+---
+
+## Docker
+
+From **`runner/`**:
+
+```bash
+bash scripts/deploy/local/docker-build.sh
+bash scripts/deploy/local/docker-run.sh
+```
+
+Or manually:
+
+```bash
+docker build -f Dockerfile -t xenonflare-runner:local .
+docker run --rm --env-file .env xenonflare-runner:local
+```
+
+Build context must be the **`runner/`** directory (where `Dockerfile`, `package.json`, and `src/` live). From a monorepo root: `docker build -f runner/Dockerfile -t xenonflare-runner:local runner/`
 
 ---
 
@@ -52,12 +85,14 @@ Create a `.env` file (see [.env.example](./.env.example)):
 
 | Variable | Required | Description |
 |----------|:--------:|-------------|
-| `RUNNER_API_BASE` | yes | Cloud API origin, **no trailing slash** — e.g. `https://cloud.xenonflare.com` (must match your deployment). |
+| `RUNNER_API_BASE` | no | Cloud API origin, **no trailing slash**. Defaults to **`https://cloud.xenonflare.com`** if unset. Set when using a **custom hosting / API host**. |
 | `RUNNER_TOKEN` | yes | Your **Runner API key**: `credentialId.secret` from **Studio → Settings → Runners** (shown once when you create an instance). Not your Studio login. |
 | `OPENAI_API_KEY` | yes | OpenAI API key — **never commit**. |
 | `OPENAI_MODEL` | no | Default model (e.g. `gpt-5-mini`). |
 | `OPENAI_SUMMARY_MODEL` | no | Optional model for summarization paths. |
 | `POLL_MS` | no | Backoff when the queue is empty (default `2500`). |
+| `RUNNER_JOB_MAX_RUNTIME_MS` | no | If set: exit cleanly after this many milliseconds (useful for **scheduled / batch** workers). |
+| `RUNNER_JOB_MAX_EMPTY_POLLS` | no | If set: exit after this many consecutive “no job” polls (avoids idle containers in cron-style setups). |
 
 ---
 

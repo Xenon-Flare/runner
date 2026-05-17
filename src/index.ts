@@ -6,12 +6,16 @@
  * completes or fails the job.
  *
  * Env:
- *   RUNNER_API_BASE  — e.g. https://cloud.xenonflare.com
+ *   RUNNER_API_BASE  — optional; defaults to https://cloud.xenonflare.com
  *   RUNNER_TOKEN     — Bearer secret from Studio → Runners
  *   OPENAI_API_KEY
  *   OPENAI_MODEL     — optional, default gpt-5-mini
  *   OPENAI_SUMMARY_MODEL — optional, default gpt-5-mini (prior history compression)
  *   POLL_MS          — optional, default 2500
+ *   RUNNER_JOB_MAX_RUNTIME_MS — optional; if set, process exits cleanly after this
+ *                               many ms (scheduled / batch workers).
+ *   RUNNER_JOB_MAX_EMPTY_POLLS — optional; exit after N consecutive lease attempts
+ *                                with no job (idle exit for cron-style polling).
  *
  * While a job is active, the runner POSTs `/heartbeatWorkspaceJob` every few minutes
  * so long OpenAI calls do not outlive the cloud lease.
